@@ -17,8 +17,8 @@ const { Title,Text,Paragraph } = Typography;
 const Template = () => {
   const router =useRouter();
 
-  
-  const templates = Templates
+  const[templates,setTemplates]=useState<any[]>([]);
+  const fetchDummyTemp = useLogin(i=>i.fetchDummyTemp)
 const setDummyTempId = useLogin((s) => s.setSelectedScreenId);
 const [library,setLibrary]=useState<boolean>(true)
 const [active,setActive]=useState<boolean>(false)
@@ -42,6 +42,14 @@ function dummyTemp(i:any){
   //   }
   //   fetchData()
   // }, [])
+  useEffect(()=>{
+    const getTemplates=async ()=>{
+      const data=await fetchDummyTemp()
+        setTemplates(data )
+      console.log(data,"this is mock temp")
+    }
+    getTemplates();
+  },[])
 
   return (
     <Flex direction="column" gap="15px" style={{ padding: "20px" }}>

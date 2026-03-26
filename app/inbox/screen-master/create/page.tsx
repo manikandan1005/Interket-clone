@@ -46,12 +46,11 @@ const [request,]=useAxios({endpoint:"CREATESCREEN",
   const handlePermission = (key: string, value: boolean) => {
     setFormData({
       ...formData,
-      permission: {
-        ...formData.permission,
+      permissions: {
+        ...formData.permissions,
         [key]: value
       }
     })
-
   }
 
   const handleUpdate = () => {
@@ -141,7 +140,7 @@ const [request,]=useAxios({endpoint:"CREATESCREEN",
           <Flex gap="10" mt="4">
 
             <Switch.Root colorPalette="green"
-              checked={formData.permission?.view}
+              checked={formData.permissions.view}
               onCheckedChange={(e) =>
                 handlePermission("view", e.checked)
               }
@@ -152,7 +151,7 @@ const [request,]=useAxios({endpoint:"CREATESCREEN",
             </Switch.Root>
 
             <Switch.Root colorPalette="green"
-              checked={formData.permission?.create}
+              checked={formData.permissions.create}
               onCheckedChange={(e) =>
                 handlePermission("create", e.checked)
               }
@@ -163,7 +162,7 @@ const [request,]=useAxios({endpoint:"CREATESCREEN",
             </Switch.Root>
 
             <Switch.Root colorPalette="green"
-              checked={formData.permission?.edit}
+              checked={formData.permissions.edit}
               onCheckedChange={(e) =>
                 handlePermission("edit", e.checked)
               }
@@ -174,7 +173,7 @@ const [request,]=useAxios({endpoint:"CREATESCREEN",
             </Switch.Root>
 
             <Switch.Root colorPalette="green"
-              checked={formData.permission?.delete}
+              checked={formData.permissions.delete}
               onCheckedChange={(e) =>
                 handlePermission("delete", e.checked)
               }

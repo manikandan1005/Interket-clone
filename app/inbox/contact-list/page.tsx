@@ -101,6 +101,7 @@ export default function contactList() {
   // ✅ NEW
   const [editContact, setEditContact] = useState<Data | null>(null)
   const [request,res] = useAxios<Data[]>({ endpoint: 'CONTACTLIST', hideErrorMsg: false });
+  // const [deleteContact,data]=useAxios<any>({endpoint:"DELETEAGENT"})
       const getContactList = async () => {
     try {
       const res = await request({ method: "GET" });
@@ -129,6 +130,7 @@ export default function contactList() {
 
   function remove(id: string) {
     const removedList = contactList.filter(i => i.id !== id);
+    // deleteContact({params:id})
     setContactList(removedList);
   }
 

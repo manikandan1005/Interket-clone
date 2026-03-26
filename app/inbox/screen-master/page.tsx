@@ -52,7 +52,7 @@ export default function ScreenMasterList() {
 
   function view(id: string) {
     setId(id);
-    router.push("/inbox/screen-master/update");
+    router.push("/inbox/screen-master/update?mode=view");
   }
 
   return (
@@ -97,12 +97,12 @@ export default function ScreenMasterList() {
                   <Table.Cell>{item.name}</Table.Cell>
                   <Table.Cell>
                     <Badge
-                      colorPalette={item.status ? "green" : "red"}
+                      colorPalette={String(item.status) === 'true' ? "green" : "red"}
                       px={2}
                       py={0.5}
                       borderRadius="full"
                       fontSize="xs"
-                    >{item.status ? "Active" : "In-active"}</Badge>
+                    >{String(item.status) === 'true' ? "Active" : "In-active"}</Badge>
 
                   </Table.Cell>
 

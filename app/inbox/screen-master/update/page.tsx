@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Flex,
   Button,
@@ -12,10 +12,20 @@ import {
   Switch
 } from "@chakra-ui/react";
 import { useLogin } from "@/lib/loginStore";
+import useAxios from "@/lib/http/useAxios";
 
 export default function ScreenMaster() {
 
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isViewMode = searchParams.get("mode") === "view"
+
+  const [request] = useAxios({
+    endpoint: "UPDATESCREEN",
+    successCb() {
+      router.back();
+    },
+  });
 
   const id = useLogin((i) => i.selectedScreenId)
   const screenData = useLogin((i) =>
@@ -28,7 +38,8 @@ export default function ScreenMaster() {
     name: "",
     description: "",
     priority: 0,
-    permission: {
+    status: "true",
+    permissions: {
       view: false,
       create: false,
       edit: false,
@@ -39,7 +50,10 @@ export default function ScreenMaster() {
   // load data into form
   useEffect(() => {
     if (screenData) {
-      setFormData(screenData)
+      setFormData({
+        ...screenData,
+        status: screenData.status === true || String(screenData.status) === "true" ? "true" : "false"
+      })
     }
   }, [screenData])
 
@@ -47,15 +61,16 @@ export default function ScreenMaster() {
   const handlePermission = (key: string, value: boolean) => {
     setFormData({
       ...formData,
-      permission: {
-        ...formData.permission,
+      permissions: {
+        ...formData.permissions,
         [key]: value
       }
     })
   }
 
   const handleUpdate = () => {
-    console.log(`Updated Data of ${screenData?.name}` , formData)
+    console.log(`Updated Data of ${screenData?.name}`, formData)
+    request({ data: formData, path: id ?? "" })
   }
 
   return (
@@ -64,7 +79,7 @@ export default function ScreenMaster() {
 
       {/* Header */}
       <Flex justifyContent="space-between" alignItems="center">
-        <h2>Screen Master Update</h2>
+        <h2>{isViewMode ? "Screen Master View" : "Screen Master Update"}</h2>
 
         <Button
           colorScheme="blue"
@@ -88,6 +103,7 @@ export default function ScreenMaster() {
               <Field.Label>Name</Field.Label>
 
               <Input
+                disabled={isViewMode}
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({
@@ -97,25 +113,25 @@ export default function ScreenMaster() {
                 }
               />
             </Field.Root>
-            
+
             <Field.Root flex="1">
               <Field.Label>Status</Field.Label>
-  <NativeSelect.Root>
-    <NativeSelect.Field
-      value={formData.status ?? ""}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          status: e.target.value === "true"
-        })
-      }
-    >
-      <option value={formData.status}>{formData.status?"Active":"In-active"}</option>
-      <option value="true">Active</option>
-      <option value="false">In-active</option>
-    </NativeSelect.Field>
-    <NativeSelect.Indicator />
-  </NativeSelect.Root>
+              <NativeSelect.Root>
+                <NativeSelect.Field
+                  disabled={isViewMode}
+                  value={String(formData.status)}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      status: e.target.value
+                    })
+                  }
+                >
+                  <option value="true">Active</option>
+                  <option value="false">In-active</option>
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
             </Field.Root>
 
           </Flex>
@@ -127,6 +143,7 @@ export default function ScreenMaster() {
               <Field.Label>Description</Field.Label>
 
               <Input
+                disabled={isViewMode}
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({
@@ -141,6 +158,7 @@ export default function ScreenMaster() {
               <Field.Label>Priority</Field.Label>
 
               <Input
+                disabled={isViewMode}
                 type="number"
                 value={formData.priority}
                 onChange={(e) =>
@@ -158,7 +176,8 @@ export default function ScreenMaster() {
           <Flex gap="10" mt="4">
 
             <Switch.Root colorPalette="green"
-              checked={formData.permission?.view}
+              disabled={isViewMode}
+              checked={formData.permissions?.view === true}
               onCheckedChange={(e) =>
                 handlePermission("view", e.checked)
               }
@@ -169,7 +188,8 @@ export default function ScreenMaster() {
             </Switch.Root>
 
             <Switch.Root colorPalette="green"
-              checked={formData.permission?.create}
+              disabled={isViewMode}
+              checked={formData.permissions?.create === true}
               onCheckedChange={(e) =>
                 handlePermission("create", e.checked)
               }
@@ -180,7 +200,8 @@ export default function ScreenMaster() {
             </Switch.Root>
 
             <Switch.Root colorPalette="green"
-              checked={formData.permission?.edit}
+              disabled={isViewMode}
+              checked={formData.permissions?.edit === true}
               onCheckedChange={(e) =>
                 handlePermission("edit", e.checked)
               }
@@ -191,7 +212,8 @@ export default function ScreenMaster() {
             </Switch.Root>
 
             <Switch.Root colorPalette="green"
-              checked={formData.permission?.delete}
+              disabled={isViewMode}
+              checked={formData.permissions?.delete === true}
               onCheckedChange={(e) =>
                 handlePermission("delete", e.checked)
               }
@@ -208,6 +230,7 @@ export default function ScreenMaster() {
       </Box>
 
       {/* Footer */}
+      {!isViewMode && (
       <Flex justifyContent="center" gap="4">
 
         <Button
@@ -225,6 +248,7 @@ export default function ScreenMaster() {
         </Button>
 
       </Flex>
+      )}
 
     </Flex>
   )

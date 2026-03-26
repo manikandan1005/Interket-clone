@@ -5,30 +5,40 @@ import {
   Badge,
   Button,
   Card,
+  Dialog,
   Heading,
   IconButton,
+  Portal,
   Spinner,
   Stack,
-  Table,
+  Table,Flex,
   Text,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { GoSync, GoPencil } from "react-icons/go";
 import { MdDeleteForever } from "react-icons/md";
+import PopupTemp from "./PopupTemp";
+
 
 const PAGE_SIZE = 5;
 
 const ActiveList = () => {
+  const [isOpen, setIsOpen] = useState(false); // ✅ added
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null); // ✅ added
+
   const [request] = useAxios<any>({ endpoint: "TEMPLATE" });
-  const [syncData,res] = useAxios<any>({ endpoint: "SYNCTEMPLATE", 
-    successCb:(()=>{
+  const [syncData, res] = useAxios<any>({
+    endpoint: "SYNCTEMPLATE",
+    successCb: (() => {
       getTemplate();
     })
   });
   const [template, setTemplate] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [call,setCall]=useState<boolean>(true);
+  const [call, setCall] = useState<boolean>(true);
+  const [selectedTempId,setSelectedTempId]=useState<string>("")
+
   async function getTemplate() {
     setLoading(true);
     try {
@@ -48,17 +58,14 @@ const ActiveList = () => {
     }
   }
 
-
   useEffect(() => {
     getTemplate();
   }, []);
 
-  function sync(i:any) {
-    const {id,status}=i;
+  function sync(i: any) {
+    const { id, status } = i;
     console.log(`/${id}/status`)
     syncData({ path: `${id}/status` })
-
-    // setCall(!call)
   }
   function remove() {
     console.log("delete");
@@ -66,12 +73,42 @@ const ActiveList = () => {
   function edit() {
     console.log("edit");
   }
+  // ✅ added - opens popup with selected template
+  function select(i: any) {
+    setSelectedTemplate(i);
+    setIsOpen(true);
+    setSelectedTempId(i.id)
+  }
 
   const totalPages = Math.ceil(template.length / PAGE_SIZE);
   const paginated = template.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <Card.Root mt={3} borderRadius="lg">
+<Flex justifyContent="center" alignItems="center" direction="column">
+
+    {/* ✅ PopupTemp wrapped in Chakra Dialog - replaces inline <PopupTemp> */}
+    <Dialog.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)} size="lg">
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content borderRadius="xl">
+            <Dialog.Header borderBottomWidth="1px">
+              <Dialog.Title>Choose Contact</Dialog.Title>
+              <Dialog.CloseTrigger />
+            </Dialog.Header>
+            <Dialog.Body py={4}>
+              <PopupTemp 
+    template={selectedTemplate} 
+    onClose={() => setIsOpen(false)} 
+    templateId={selectedTempId}  // ✅ added
+/>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
+
+    <Card.Root mt={3} borderRadius="lg" w="full">
       <Card.Header pb={2}>
         <Heading size="md">Active Templates</Heading>
       </Card.Header>
@@ -113,10 +150,8 @@ const ActiveList = () => {
                       <Table.Cell>{index + 1}</Table.Cell>
                       <Table.Cell>
                         <Text
-                          // color="blue.500"
                           fontWeight="medium"
                           cursor="pointer"
-                          // _hover={{ textDecoration: "underline" }}
                         >
                           {i.name}
                         </Text>
@@ -139,12 +174,12 @@ const ActiveList = () => {
                       <Table.Cell>
                         <Stack direction="row" gap={2}>
                           <IconButton
-                          className="hover:bg-white! text-green-500! border-2 hover:border-green-500!"
+                            className="hover:bg-white! text-green-500! border-2 hover:border-green-500!"
                             aria-label="Sync"
                             size="sm"
                             p="4"
                             colorPalette="green"
-                          onClick={()=>sync(i)}
+                            onClick={() => sync(i)}
                           >
                             <GoSync />
                           </IconButton>
@@ -166,6 +201,18 @@ const ActiveList = () => {
                           >
                             <GoPencil />
                           </IconButton>
+
+                          {i.status === "APPROVED"?
+                            <IconButton
+                              aria-label="Edit"
+                              size="sm"
+                              p="4"
+                              colorPalette="yellow"
+                              onClick={() => select(i)} // ✅ was empty, now opens popup
+                            >
+                              use
+                            </IconButton>
+                            :<></>}
                         </Stack>
                       </Table.Cell>
                     </Table.Row>
@@ -211,6 +258,7 @@ const ActiveList = () => {
         )}
       </Card.Body>
     </Card.Root>
+</Flex>
   );
 };
 

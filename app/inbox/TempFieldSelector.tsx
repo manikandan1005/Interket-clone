@@ -48,6 +48,7 @@ interface Props {
   setShowTemplateConfig: React.Dispatch<React.SetStateAction<boolean>>;
   conversationData?: ConversationData;
   templateId: string | null;
+  customerIds?: any[]; // ✅ For bulk template broadcasting
 }
 
 interface VariableConfig {
@@ -196,9 +197,14 @@ export default function TempFieldSelector({
   setShowTemplateConfig,
   conversationData,
   templateId,
+  customerIds,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false);
-  const [request] = useAxios({ endpoint: "SENDTEMPLATEMESSAGE" });
+  const [request] = useAxios({ endpoint: "SENDTEMPLATEMESSAGE",
+    successCb() {
+      setShowTemplateConfig(false);
+    }
+  });
 
   const template = useLogin((i) =>
     i.approvedTemplates.find((t) => t.id === templateId)
@@ -222,11 +228,16 @@ export default function TempFieldSelector({
   async function sendTemplateId() {
     const customerId = selectedctid || conversationData?.id;
 
-    const payload = {
-      customerId,
+    const payload: any = {
       templateId,
       variables: values,
     };
+
+    if (customerIds && customerIds.length > 0) {
+      payload.customerIds = customerIds;
+    } else {
+      payload.customerId = customerId;
+    }
 
     await request({ data: payload });
   }
